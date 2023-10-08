@@ -4,10 +4,37 @@ const bcrypt = require("bcrypt");
 
 app.use(express.json());
 
+const mysql = require("mysql2");
+
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "Admin@123",
+  database: "doc_sub",
+});
+
+db.connect((err) => {
+  if (err) {
+    console.error("Database connection failed: " + err.message);
+  } else {
+    console.log("Connected to MySQL database");
+  }
+});
+
 const users = [];
 
 app.get("/users", (req, res) => {
-  res.json(users);
+  // Fetch user records from the database
+  db.query("SELECT * FROM users", (err, results) => {
+    if (err) {
+      console.error("Error fetching users:", err);
+      res.status(500).send("Error fetching users");
+      return;
+    }
+
+    // Send the user records as JSON response
+    res.json(results);
+  });
 });
 
 app.post("/users", async (req, res) => {
@@ -24,8 +51,21 @@ app.post("/users", async (req, res) => {
       password: hashedPassword,
     };
 
-    users.push(user);
-    res.status(201).send();
+    //users.push(user);
+    // Insert user into the MySQL database
+    db.query(
+      "INSERT INTO users (name, password) VALUES (?, ?)",
+      [user.name, user.password],
+      (err, result) => {
+        if (err) {
+          console.error("Error inserting user: " + err.message);
+          res.status(500).send("Error inserting user");
+        } else {
+          console.log("User inserted into the database");
+          res.status(201).send("User registered successfully");
+        }
+      }
+    );
   } catch (error) {
     console.error(error);
     res.status(500).send();
