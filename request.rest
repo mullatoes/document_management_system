@@ -19,3 +19,6 @@ Content-Type: application/json
     "name" : "admin",
     "password" : "Admin12"
 }
+
+###
+GET http://localhost:9000/users/login?name=pozBze&password=Admin123

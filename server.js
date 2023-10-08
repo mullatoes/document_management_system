@@ -1,8 +1,16 @@
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt");
+const cors = require("cors");
 
 app.use(express.json());
+app.use(cors());
+
+const corsOptions = {
+  origin: "http://localhost:3000", // Replace with your frontend URL
+};
+
+app.use(cors(corsOptions));
 
 const mysql = require("mysql2");
 
@@ -21,7 +29,36 @@ db.connect((err) => {
   }
 });
 
-const users = [];
+// Create a route to handle user login
+app.get("/users/login", async (req, res) => {
+  const { name, password } = req.query;
+
+  // Query the database to find the user by name
+  const query = "SELECT * FROM users WHERE name = ?";
+  db.query(query, [name], async (err, results) => {
+    if (err) {
+      console.error("Database query failed:", err.message);
+      return res.status(500).send("Database query error");
+    }
+
+    if (results.length === 0) {
+      return res.status(400).send("User not found");
+    }
+
+    const user = results[0];
+
+    try {
+      if (await bcrypt.compare(password, user.password)) {
+        res.send("Login successful");
+      } else {
+        res.send("Incorrect password");
+      }
+    } catch (error) {
+      console.error("Password comparison error:", error);
+      res.status(500).send("Internal server error");
+    }
+  });
+});
 
 app.get("/users", (req, res) => {
   // Fetch user records from the database
