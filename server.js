@@ -7,7 +7,7 @@ app.use(express.json());
 app.use(cors());
 
 const corsOptions = {
-  origin: "http://localhost:3000", // Replace with your frontend URL
+  origin: "http://localhost:3000",
 };
 
 app.use(cors(corsOptions));
@@ -29,11 +29,12 @@ db.connect((err) => {
   }
 });
 
-// Create a route to handle user login
 app.get("/users/login", async (req, res) => {
   const { name, password } = req.query;
 
-  // Query the database to find the user by name
+  console.log("Received login request for name:", name);
+  console.log("Password: ", password);
+
   const query = "SELECT * FROM users WHERE name = ?";
   db.query(query, [name], async (err, results) => {
     if (err) {
@@ -42,18 +43,22 @@ app.get("/users/login", async (req, res) => {
     }
 
     if (results.length === 0) {
+      console.log("User not found");
       return res.status(400).send("User not found");
     }
 
     const user = results[0];
 
     try {
-      if (await bcrypt.compare(password, user.password)) {
-        res.send("Login successful");
+      if (bcrypt.compare(password, user.password)) {
+        console.log("Login successful");
+        res.status(200).send("Login successful");
       } else {
-        res.send("Incorrect password");
+        console.log("Incorrect password");
+        res.status(401).send("Incorrect password");
       }
     } catch (error) {
+      console.log("Password comparison error!");
       console.error("Password comparison error:", error);
       res.status(500).send("Internal server error");
     }
@@ -61,7 +66,6 @@ app.get("/users/login", async (req, res) => {
 });
 
 app.get("/users", (req, res) => {
-  // Fetch user records from the database
   db.query("SELECT * FROM users", (err, results) => {
     if (err) {
       console.error("Error fetching users:", err);
@@ -69,7 +73,6 @@ app.get("/users", (req, res) => {
       return;
     }
 
-    // Send the user records as JSON response
     res.json(results);
   });
 });
@@ -88,8 +91,6 @@ app.post("/users", async (req, res) => {
       password: hashedPassword,
     };
 
-    //users.push(user);
-    // Insert user into the MySQL database
     db.query(
       "INSERT INTO users (name, password) VALUES (?, ?)",
       [user.name, user.password],
