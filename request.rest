@@ -21,4 +21,4 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:9000/users/login?name=admin&password=Admin12
+GET http://localhost:9000/users/login?name=tonito&password=tonitoAQ

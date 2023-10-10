@@ -50,7 +50,9 @@ app.get("/users/login", async (req, res) => {
     const user = results[0];
 
     try {
-      if (bcrypt.compare(password, user.password)) {
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      console.log(`Pass ${passwordMatch}`);
+      if (passwordMatch) {
         console.log("Login successful");
         res.status(200).send("Login successful");
       } else {
