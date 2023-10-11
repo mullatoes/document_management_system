@@ -30,13 +30,13 @@ db.connect((err) => {
 });
 
 app.get("/users/login", async (req, res) => {
-  const { name, password } = req.query;
+  const { email, password } = req.query;
 
-  console.log("Received login request for name:", name);
+  console.log("Received login request for email:", email);
   console.log("Password: ", password);
 
-  const query = "SELECT * FROM users WHERE name = ?";
-  db.query(query, [name], async (err, results) => {
+  const query = "SELECT * FROM users WHERE email = ?";
+  db.query(query, [email], async (err, results) => {
     if (err) {
       console.error("Database query failed:", err.message);
       return res.status(500).send("Database query error");
@@ -87,15 +87,17 @@ app.post("/users", async (req, res) => {
 
     console.log(salt);
     console.log(hashedPassword);
+    console.log(`email ${req.body.email}`);
 
     const user = {
       name: req.body.name,
+      email: req.body.email,
       password: hashedPassword,
     };
 
     db.query(
-      "INSERT INTO users (name, password) VALUES (?, ?)",
-      [user.name, user.password],
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      [user.name, user.email, user.password],
       (err, result) => {
         if (err) {
           console.error("Error inserting user: " + err.message);

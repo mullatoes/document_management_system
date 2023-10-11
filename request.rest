@@ -6,8 +6,9 @@ POST http://localhost:9000/users
 Content-Type: application/json
 
 {
-    "name" : "pozze",
-    "password" : "Pozze@123"
+    "name" : "mwashe",
+    "email": "mwashe@gmail.com",
+    "password" : "Mwashe"
 }
 
 ###
@@ -16,8 +17,10 @@ POST http://localhost:9000/users/login
 Content-Type: application/json
 
 {
-    "name" : "admin",
-    "password" : "Admin12"
+    "name" : "mwashe",
+    "email": "mwashe@gmail.com",
+    "password" : "Mwashe",
+
 }
 
 ###
