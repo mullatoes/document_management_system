@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt");
 const cors = require("cors");
+const multer = require("multer");
 
 app.use(express.json());
 app.use(cors());
@@ -20,6 +21,10 @@ const db = mysql.createConnection({
   password: "Admin@123",
   database: "doc_sub",
 });
+
+// Create a storage engine for Multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 db.connect((err) => {
   if (err) {
@@ -130,6 +135,28 @@ app.post("/users/login", async (req, res) => {
   } catch {
     res.status(500).send();
   }
+});
+
+// API endpoint to handle file upload
+app.post("/upload", upload.single("file"), (req, res) => {
+  // Access the uploaded file via req.file
+  if (!req.file) {
+    return res.status(400).json({ error: "No file provided" });
+  }
+
+  // You can access the file data like this
+  const fileBuffer = req.file.buffer;
+  const fileName = req.file.originalname;
+
+  // Store the file data in your MySQL database
+  const sql = "INSERT INTO files (name, data) VALUES (?, ?)";
+  db.query(sql, [fileName, fileBuffer], (err, result) => {
+    if (err) {
+      console.error("Error storing the file:", err);
+      return res.status(500).json({ error: "File storage failed" });
+    }
+    return res.status(200).json({ message: "File stored successfully" });
+  });
 });
 
 app.listen(9000, () => {
